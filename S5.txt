@@ -1,0 +1,81 @@
+-- Create Employee table
+CREATE TABLE Employee (
+    emp_id INT PRIMARY KEY,
+    employee_name VARCHAR(50) NOT NULL UNIQUE, -- Adding UNIQUE constraint to employee_name
+    street VARCHAR(100) NOT NULL,
+    city VARCHAR(50) NOT NULL
+);
+
+-- Insert records into Employee table
+INSERT INTO Employee (emp_id, employee_name, street, city) VALUES
+(1, 'Alice', '123 Elm St', 'New York'),
+(2, 'Bob', '456 Oak St', 'Los Angeles'),
+(3, 'Charlie', '789 Maple St', 'Chicago'),
+(4, 'David', '101 Pine St', 'New York'),
+(5, 'Eva', '202 Cedar St', 'Los Angeles');
+
+-- Create Company table
+CREATE TABLE Company (
+    company_name VARCHAR(50) PRIMARY KEY,
+    city VARCHAR(50) NOT NULL
+);
+
+-- Insert records into Company table
+INSERT INTO Company (company_name, city) VALUES
+('TCS', 'New York'),
+('InfoSys', 'Chicago'),
+('TechM', 'Los Angeles'),
+('Wipro', 'New York');
+
+-- Create Works table with foreign keys for employee_name and company_name
+CREATE TABLE Works (
+    employee_name VARCHAR(50) NOT NULL,
+    company_name VARCHAR(50) NOT NULL,
+    salary DECIMAL(10, 2),
+    FOREIGN KEY (employee_name) REFERENCES Employee(employee_name),
+    FOREIGN KEY (company_name) REFERENCES Company(company_name)
+);
+
+-- Insert records into Works table
+INSERT INTO Works (employee_name, company_name, salary) VALUES
+('Alice', 'TCS', 9000.00),
+('Bob', 'InfoSys', 12000.00),
+('Charlie', 'TechM', 11000.00),
+('David', 'TechM', 9500.00),
+('Eva', 'Wipro', 13000.00);
+
+-- Create Manages table
+CREATE TABLE Manages (
+    employee_name VARCHAR(50) NOT NULL,
+    manager_name VARCHAR(50) NOT NULL,
+    FOREIGN KEY (employee_name) REFERENCES Employee(employee_name)
+);
+
+-- Insert records into Manages table
+INSERT INTO Manages (employee_name, manager_name) VALUES
+('Alice', 'Bob'),
+('Charlie', 'David'),
+('Eva', 'Alice');
+
+
+select employee_name 
+from Works
+where company_name='TCS'
+
+select W.employee_name, W.company_name
+from Works W
+order by W.employee_name asc, W.company_name desc;
+
+
+update Employee E
+join Works W on E.employee_name = W.employee_name
+set E.city='Bangalore'
+where W.company_name= 'InfoSys';
+
+select E.employee_name,E.street,E.city
+from Employee E
+join Works W on E.employee_name=W.employee_name
+where W.company_name='TechM' and W.salary>10000;
+
+alter table Company
+add Assets int(20);

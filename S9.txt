@@ -1,0 +1,91 @@
+-- Create CUSTOMERS table
+CREATE TABLE CUSTOMERS (
+    CNo INT PRIMARY KEY,
+    Cname VARCHAR(50) NOT NULL,
+    Ccity VARCHAR(50) NOT NULL,
+    CMobile VARCHAR(15) NOT NULL
+);
+
+-- Insert records into CUSTOMERS table
+INSERT INTO CUSTOMERS (CNo, Cname, Ccity, CMobile) VALUES
+(1, 'Gopal', 'Delhi', '9876543210'),
+(2, 'Maya', 'Mumbai', '9876543211'),
+(3, 'Raj', 'Chennai', '9876543212'),
+(4, 'Simran', 'Delhi', '9876543213');
+
+-- Create ITEMS table
+CREATE TABLE ITEMS (
+    INo INT PRIMARY KEY,
+    Iname VARCHAR(50) NOT NULL,
+    Itype VARCHAR(50) NOT NULL,
+    Iprice DECIMAL(10, 2) NOT NULL,
+    Icount INT NOT NULL
+);
+
+-- Insert records into ITEMS table
+INSERT INTO ITEMS (INo, Iname, Itype, Iprice, Icount) VALUES
+(101, 'Pen', 'Stationary', 50.00, 100),
+(102, 'Notebook', 'Stationary', 250.00, 200),
+(103, 'Pencil', 'Stationary', 30.00, 150),
+(104, 'Desk', 'Furniture', 1500.00, 10),
+(105, 'Eraser', 'Stationary', 25.00, 100),
+(106, 'Printer', 'Electronics', 5000.00, 5);
+
+-- Create PURCHASE table
+CREATE TABLE PURCHASE (
+    PNo INT PRIMARY KEY,
+    Pdate DATE NOT NULL,
+    Pquantity INT NOT NULL,
+    CNo INT,
+    INo INT,
+    FOREIGN KEY (CNo) REFERENCES CUSTOMERS(CNo),
+    FOREIGN KEY (INo) REFERENCES ITEMS(INo)
+);
+
+-- Insert records into PURCHASE table
+INSERT INTO PURCHASE (PNo, Pdate, Pquantity, CNo, INo) VALUES
+(1, '2024-11-01', 2, 1, 101),
+(2, '2024-11-03', 5, 2, 102),
+(3, '2024-11-02', 3, 3, 103),
+(4, '2024-11-01', 1, 4, 104),
+(5, '2024-11-04', 4, 2, 105);
+
+
+SELECT Iname, Iprice 
+FROM ITEMS 
+WHERE Itype = 'Stationary' AND Iprice BETWEEN 400 AND 1000;
+
+
+UPDATE CUSTOMERS 
+SET CMobile = '1234567890' 
+WHERE Cname = 'Gopal';
+
+
+SELECT * 
+FROM ITEMS 
+WHERE Iprice = (SELECT MAX(Iprice) FROM ITEMS);
+
+SELECT PNo, Pdate, Pquantity, CNo, INo 
+FROM PURCHASE 
+ORDER BY Pdate DESC;
+
+
+SELECT Ccity, COUNT(*) AS CustomerCount 
+FROM CUSTOMERS 
+GROUP BY Ccity;
+
+SELECT Pquantity 
+FROM PURCHASE P 
+JOIN CUSTOMERS C ON P.CNo = C.CNo 
+WHERE C.Cname = 'Maya';
+
+
+CREATE VIEW View_Stationary_Items AS
+SELECT Iname, Iprice, Icount 
+FROM ITEMS 
+WHERE Itype = 'Stationary' 
+ORDER BY Iprice DESC;
+
+
+SELECT * FROM View_Stationary_Items;
+

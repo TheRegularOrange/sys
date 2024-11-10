@@ -1,0 +1,110 @@
+-- Create Cust_Master table
+CREATE TABLE Cust_Master (
+    Cust_no VARCHAR(10) PRIMARY KEY,
+    Cust_name VARCHAR(50) NOT NULL,
+    Cust_addr VARCHAR(100) NOT NULL
+);
+
+-- Insert records into Cust_Master table
+INSERT INTO Cust_Master (Cust_no, Cust_name, Cust_addr) VALUES
+('C1001', 'Alice Smith', 'Bangalore'),
+('C1002', 'Bob Johnson', 'Mangalore'),
+('C1003', 'Charlie Brown', 'Bangalore'),
+('C1004', 'David Clark', 'Mangalore'),
+('C1005', 'Eva Stone', 'Bangalore'),
+('C1006', 'Frank White', 'Chennai'),
+('C1007', 'Grace Black', 'Mangalore'),
+('C1008', 'Hannah Green', 'Bangalore');
+
+-- Create Orders table (Note: The table name is 'Orders' here)
+CREATE TABLE Orders (
+    Order_no VARCHAR(10) PRIMARY KEY,
+    Cust_no VARCHAR(10),
+    Order_date DATE,
+    Qty_Ordered INT,
+    FOREIGN KEY (Cust_no) REFERENCES Cust_Master(Cust_no)
+);
+
+-- Insert records into Orders table
+INSERT INTO Orders (Order_no, Cust_no, Order_date, Qty_Ordered) VALUES
+('O1001', 'C1001', '2024-11-01', 5),
+('O1002', 'C1002', '2024-11-05', 10),
+('O1003', 'C1003', '2024-11-07', 3),
+('O1004', 'C1004', '2024-11-10', 7),
+('O1005', 'C1005', '2024-11-12', 12),
+('O1006', 'C1006', '2024-11-15', 8),
+('O1007', 'C1007', '2024-11-18', 6),
+('O1008', 'C1008', '2024-11-20', 15);
+
+-- Create Product table (Corrected foreign key reference to Orders table)
+CREATE TABLE Product (
+    Product_no VARCHAR(10) PRIMARY KEY,
+    Product_name VARCHAR(50),
+    Order_no VARCHAR(10),
+    FOREIGN KEY (Order_no) REFERENCES Orders(Order_no) -- Corrected reference
+);
+
+-- Insert records into Product table
+INSERT INTO Product (Product_no, Product_name, Order_no) VALUES
+('P1001', 'Laptop', 'O1001'),
+('P1002', 'Smartphone', 'O1002'),
+('P1003', 'Tablet', 'O1003'),
+('P1004', 'Headphones', 'O1004'),
+('P1005', 'Smartwatch', 'O1005'),
+('P1006', 'Monitor', 'O1006'),
+('P1007', 'Keyboard', 'O1007'),
+('P1008', 'Mouse', 'O1008');
+
+
+1. List names of customers having 'A' as second letter in their
+name.
+2. Display order from Customer no C1002, C1005, C1007 and C1008
+3. List Clients who stay in either 'Banglore or 'Manglore'
+4. Display name of customers& the product_name they have purchase
+5. Create view View1 consisting of Cust_name, Product_name.
+6. Disply product_name and quantity purchase by each customer
+7. Perform different joint operation
+
+select Cust_name
+from Cust_Master
+where Cust_name like '_A%';
+
+select Order_no
+from Orders 
+where Cust_no in('C1002' ,'C1002', 'C1005', 'C1007','C1008');
+
+
+
+select Cust_name 
+from Cust_Master
+where Cust_addr in('Bangalore','Mangalore');
+
+
+select C.Cust_name,P.Product_name
+from Cust_Master C
+join Orders O on C.Cust_no = O.Cust_no
+join Product P on P.Order_no = O.Order_no;
+
+
+create view view1 as 
+select C.Cust_name, P.Product_name
+from Cust_Master C
+join Orders O on C.Cust_no=O.Cust_no
+join Product P on P.Order_no = O.Order_no;
+
+
+select C.Cust_name,P.Product_name,O.Qty_Ordered
+from Cust_Master C
+join Orders O on C.Cust_no=O.Cust_no
+join Product P on P.Order_no=O.Order_no;
+
+
+SELECT C.Cust_name, P.Product_name
+FROM Cust_Master C
+LEFT JOIN Order O ON C.Cust_no = O.Cust_no
+LEFT JOIN Product P ON O.Order_no = P.Order_no
+UNION
+SELECT C.Cust_name, P.Product_name
+FROM Cust_Master C
+RIGHT JOIN Order O ON C.Cust_no = O.Cust_no
+RIGHT JOIN Product P ON O.Order_no = P.Order_no;

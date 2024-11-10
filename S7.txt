@@ -1,0 +1,140 @@
+CREATE TABLE Branch (
+    branch_name VARCHAR(50) PRIMARY KEY,
+    branch_city VARCHAR(50) NOT NULL,
+    assets DECIMAL(15, 2)
+);
+
+CREATE TABLE Account (
+    acc_no INT PRIMARY KEY,
+    branch_name VARCHAR(50) NOT NULL,
+    balance DECIMAL(15, 2),
+    FOREIGN KEY (branch_name) REFERENCES Branch(branch_name)
+);
+
+CREATE TABLE Customer (
+    cust_name VARCHAR(50) PRIMARY KEY,
+    cust_street VARCHAR(100),
+    cust_city VARCHAR(50)
+);
+
+CREATE TABLE Loan (
+    loan_no INT PRIMARY KEY,
+    branch_name VARCHAR(50),
+    amount DECIMAL(15, 2),
+    FOREIGN KEY (branch_name) REFERENCES Branch(branch_name)
+);
+
+CREATE TABLE Depositor (
+    cust_name VARCHAR(50),
+    acc_no INT,
+    PRIMARY KEY (cust_name, acc_no),
+    FOREIGN KEY (cust_name) REFERENCES Customer(cust_name),
+    FOREIGN KEY (acc_no) REFERENCES Account(acc_no)
+);
+
+CREATE TABLE Borrower (
+    cust_name VARCHAR(50),
+    loan_no INT,
+    PRIMARY KEY (cust_name, loan_no),
+    FOREIGN KEY (cust_name) REFERENCES Customer(cust_name),
+    FOREIGN KEY (loan_no) REFERENCES Loan(loan_no)
+);
+
+
+-- Insert into Branch table
+INSERT INTO Branch (branch_name, branch_city, assets)
+VALUES ('Wadia College', 'Pune', 1000000);
+
+INSERT INTO Branch (branch_name, branch_city, assets)
+VALUES ('MG Road', 'Mumbai', 1500000);
+
+-- Insert into Account table
+INSERT INTO Account (acc_no, branch_name, balance)
+VALUES (101, 'Wadia College', 50000);
+
+INSERT INTO Account (acc_no, branch_name, balance)
+VALUES (102, 'MG Road', 75000);
+
+-- Insert into Customer table
+INSERT INTO Customer (cust_name, cust_street, cust_city)
+VALUES ('John Doe', '123 Main St', 'Pune');
+
+INSERT INTO Customer (cust_name, cust_street, cust_city)
+VALUES ('Jane Smith', '456 Park Ave', 'Mumbai');
+
+-- Insert into Loan table
+INSERT INTO Loan (loan_no, branch_name, amount)
+VALUES (1001, 'Wadia College', 20000);
+
+INSERT INTO Loan (loan_no, branch_name, amount)
+VALUES (1002, 'MG Road', 30000);
+
+-- Insert into Depositor table
+INSERT INTO Depositor (cust_name, acc_no)
+VALUES ('John Doe', 101);
+
+INSERT INTO Depositor (cust_name, acc_no)
+VALUES ('Jane Smith', 102);
+
+
+-- Insert into Borrower table
+INSERT INTO Borrower (cust_name, loan_no)
+VALUES ('John Doe', 1001);
+
+INSERT INTO Borrower (cust_name, loan_no)
+VALUES ('Jane Smith', 1002);
+
+
+1. Create a View1 to display List all customers in alphabetical
+order who have loan from Pune_Station branch.
+2. Create View2 on branch table by selecting any two columns and
+perform insert update delete operations.
+3. Create View3 on borrower and depositor table by selecting any
+one column from each table perform insert update delete
+operations.
+4. Create Union of left and right joint for all customers who have
+an account or loan or both at bank
+5. Create Simple and Unique index.
+6. Display index Information.
+
+create view view1 as
+select C.cust_name
+from Customer C
+join Borrower B on C.cust_name=B.cust_name
+join Loan L on B.loan_no = L.loan_no
+where L.branch_name = 'Wadia College'
+order by C.cust_name;
+
+create view view2 as 
+select branch_name, branch_city
+from Branch;
+
+insert into view2 (branch_name,branch_city) values('VN','Pune');
+
+update view2 set branch_city='Bangalore'
+where branch_name='VN';
+
+delete from view2 where branch_name='VN';
+
+create view view3 as
+select C.cust_name
+from Customer C
+join Borrower B on C.cust_name= B.cust_name
+join Depositor D on C.cust_name= D.cust_name;
+
+select C.cust_name
+from Customer C
+left join Borrower B on C.cust_name = B.cust_name
+left join Depositor D on C.cust_name = D.cust_name
+where D.cust_name is not null or B.cust_name is not null
+Union
+select C.cust_name
+from Customer C
+right join Borrower B on C.cust_name = B.cust_name
+right join Depositor D on C.cust_name = D.cust_name
+where D.cust_name is not null or B.cust_name is not null;
+
+create index index1 on Branch(branch_name);
+create unique index index1 on Branch(branch_name);
+show index from Branch;
+

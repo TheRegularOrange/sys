@@ -1,0 +1,174 @@
+To implement MongoDB database connectivity with PHP, Python, and Java and perform CRUD operations, I'll provide basic examples for each language. These will include operations like adding, deleting, and editing data in MongoDB.
+
+### 1. **MongoDB Connectivity with PHP**
+
+You'll need the MongoDB PHP driver installed for this. If it's not installed, you can install it via Composer:
+
+```bash
+composer require mongodb/mongodb
+```
+
+**PHP Code:**
+
+```php
+<?php
+require 'vendor/autoload.php'; // Include MongoDB library
+
+// Connect to MongoDB server
+$client = new MongoDB\Client("mongodb://localhost:27017");
+
+// Select the database and collection
+$collection = $client->test_db->test_collection;
+
+// Add a document (insert)
+$insertResult = $collection->insertOne([
+    'name' => 'John Doe',
+    'age' => 30,
+    'email' => 'johndoe@example.com'
+]);
+
+echo "Inserted with Object ID: " . $insertResult->getInsertedId() . "\n";
+
+// Edit a document (update)
+$updateResult = $collection->updateOne(
+    ['name' => 'John Doe'],
+    ['$set' => ['age' => 31]]
+);
+echo "Matched " . $updateResult->getMatchedCount() . " document(s).\n";
+echo "Modified " . $updateResult->getModifiedCount() . " document(s).\n";
+
+// Delete a document
+$deleteResult = $collection->deleteOne(['name' => 'John Doe']);
+echo "Deleted " . $deleteResult->getDeletedCount() . " document(s).\n";
+?>
+```
+
+### 2. **MongoDB Connectivity with Python**
+
+You need to install the `pymongo` package if it's not installed:
+
+```bash
+pip install pymongo
+```
+
+**Python Code:**
+
+```python
+from pymongo import MongoClient
+
+# Connect to MongoDB
+client = MongoClient('mongodb://localhost:27017')
+
+# Select the database and collection
+db = client['test_db']
+collection = db['test_collection']
+
+# Add a document (insert)
+insert_result = collection.insert_one({
+    'name': 'Jane Smith',
+    'age': 28,
+    'email': 'janesmith@example.com'
+})
+print(f"Inserted with Object ID: {insert_result.inserted_id}")
+
+# Edit a document (update)
+update_result = collection.update_one(
+    {'name': 'Jane Smith'},
+    {'$set': {'age': 29}}
+)
+print(f"Matched {update_result.matched_count} document(s).")
+print(f"Modified {update_result.modified_count} document(s).")
+
+# Delete a document
+delete_result = collection.delete_one({'name': 'Jane Smith'})
+print(f"Deleted {delete_result.deleted_count} document(s).")
+```
+
+### 3. **MongoDB Connectivity with Java**
+
+For Java, you need to include the MongoDB Java Driver in your `pom.xml` file if you're using Maven:
+
+```xml
+<dependency>
+    <groupId>org.mongodb</groupId>
+    <artifactId>mongo-java-driver</artifactId>
+    <version>4.8.0</version>
+</dependency>
+```
+
+**Java Code:**
+
+```java
+import com.mongodb.client.*;
+import com.mongodb.MongoClientSettings;
+import com.mongodb.client.model.Filters;
+import org.bson.Document;
+
+public class MongoDBExample {
+    public static void main(String[] args) {
+        // Connect to MongoDB
+        MongoClient mongoClient = MongoClients.create("mongodb://localhost:27017");
+
+        // Select the database and collection
+        MongoDatabase database = mongoClient.getDatabase("test_db");
+        MongoCollection<Document> collection = database.getCollection("test_collection");
+
+        // Add a document (insert)
+        Document doc = new Document("name", "Alice Brown")
+                .append("age", 25)
+                .append("email", "alicebrown@example.com");
+        collection.insertOne(doc);
+        System.out.println("Inserted document with id: " + doc.get("_id"));
+
+        // Edit a document (update)
+        collection.updateOne(Filters.eq("name", "Alice Brown"), 
+                             new Document("$set", new Document("age", 26)));
+        System.out.println("Updated Alice Brown's age.");
+
+        // Delete a document
+        collection.deleteOne(Filters.eq("name", "Alice Brown"));
+        System.out.println("Deleted Alice Brown's record.");
+
+        mongoClient.close();
+    }
+}
+```
+
+### 4. **MongoDB CLI Commands on Ubuntu**
+
+In addition to coding, you can use MongoDB's CLI to perform CRUD operations directly in the Mongo shell.
+
+**Start Mongo Shell:**
+```bash
+mongo
+```
+
+**Add a document (insert):**
+
+```javascript
+use test_db;  // Select the database
+db.test_collection.insertOne({name: "Bob Johnson", age: 35, email: "bobjohnson@example.com"});
+```
+
+**Edit a document (update):**
+
+```javascript
+db.test_collection.updateOne(
+    {name: "Bob Johnson"}, 
+    {$set: {age: 36}}
+);
+```
+
+**Delete a document:**
+
+```javascript
+db.test_collection.deleteOne({name: "Bob Johnson"});
+```
+
+**List all documents:**
+
+```javascript
+db.test_collection.find();
+```
+
+These examples should help you get started with MongoDB connectivity and basic CRUD operations in PHP, Python, and Java. Let me know if you need more detailed help!

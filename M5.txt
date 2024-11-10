@@ -1,0 +1,136 @@
+# Switch to the CompanyDB database
+use CompanyDB
+
+# Insert sample documents into Employee collection
+db.Employee.insertMany([
+  {
+    Emp_id: 101,
+    Name: { FName: "John", LName: "Doe" },
+    Company_Name: "Infosys",
+    Salary: 60000,
+    Designation: "Developer",
+    Age: 29,
+    Expertise: ["Java", "Spring", "MongoDB"],
+    DOB: "1995-05-10",
+    Email_id: "john.doe@infosys.com",
+    Contact: "9876543210",
+    Address: [{ PAddr: "123 Main St", LAddr: "Bangalore", city: "Bangalore", Pin_code: "560001" }]
+  },
+  {
+    Emp_id: 102,
+    Name: { FName: "Alice", LName: "Smith" },
+    Company_Name: "TCS",
+    Salary: 45000,
+    Designation: "Tester",
+    Age: 25,
+    Expertise: ["Automation", "Python"],
+    DOB: "1998-07-20",
+    Email_id: "alice.smith@tcs.com",
+    Contact: "9876543221",
+    Address: [{ PAddr: "456 Elm St", LAddr: "Mumbai", city: "Mumbai", Pin_code: "400001" }]
+  },
+  {
+    Emp_id: 103,
+    Name: { FName: "Bob", LName: "Johnson" },
+    Company_Name: "TCS",
+    Salary: 70000,
+    Designation: "Manager",
+    Age: 32,
+    Expertise: ["Leadership", "Project Management", "Agile"],
+    DOB: "1992-01-12",
+    Email_id: "bob.johnson@tcs.com",
+    Contact: "9876543232",
+    Address: [{ PAddr: "789 Pine St", LAddr: "Chennai", city: "Chennai", Pin_code: "600001" }]
+  },
+  {
+    Emp_id: 104,
+    Name: { FName: "Charlie", LName: "Brown" },
+    Company_Name: "Accenture",
+    Salary: 55000,
+    Designation: "Developer",
+    Age: 27,
+    Expertise: ["C#", ".NET", "React"],
+    DOB: "1997-02-05",
+    Email_id: "charlie.brown@accenture.com",
+    Contact: "9876543243",
+    Address: [{ PAddr: "321 Oak St", LAddr: "Hyderabad", city: "Hyderabad", Pin_code: "500001" }]
+  },
+  {
+    Emp_id: 105,
+    Name: { FName: "Swapnil", LName: "Jadhav" },
+    Company_Name: "TCS",
+    Salary: 35000,
+    Designation: "Tester",
+    Age: 24,
+    Expertise: ["Manual Testing", "Selenium"],
+    DOB: "1999-12-25",
+    Email_id: "swapnil.jadhav@tcs.com",
+    Contact: "9876543254",
+    Address: [{ PAddr: "987 Cedar St", LAddr: "Delhi", city: "Delhi", Pin_code: "110001" }]
+  }
+])
+
+# 1. Using aggregation, return separated values in the Expertise array and return sum of each element in the array.
+db.Employee.aggregate([
+  { $unwind: "$Expertise" },
+  { $group: { _id: "$Expertise", total: { $sum: 1 } } }
+])
+
+# 2. Using aggregate method, return Max and Min Salary for each company.
+db.Employee.aggregate([
+  { $group: { _id: "$Company_Name", maxSalary: { $max: "$Salary" }, minSalary: { $min: "$Salary" } } }
+])
+
+# 3. Using aggregate method, find Employee with Total Salary for Each City with Designation="DBA".
+db.Employee.aggregate([
+  { $match: { Designation: "DBA" } },
+  { $unwind: "$Address" },
+  { $group: { _id: "$Address.city", totalSalary: { $sum: "$Salary" } } }
+])
+
+# 4. Using aggregation method, return separated values in the Expertise array for employee name where "Swapnil Jadhav".
+db.Employee.aggregate([
+  { $match: { "Name.FName": "Swapnil", "Name.LName": "Jadhav" } },
+  { $unwind: "$Expertise" },
+  { $project: { Expertise: 1 } }
+])
+
+# 5. To create Compound Index on Name: 1, Age: -1.
+db.Employee.createIndex({ "Name.FName": 1, "Age": -1 })
+
+# 6. Create an index on Emp_id field, compare the time required to search Emp_id before and after creating an index.
+# First, let's add 10,000 documents to test the performance.
+for (let i = 106; i <= 10105; i++) {
+  db.Employee.insertOne({
+    Emp_id: i,
+    Name: { FName: "Test", LName: "User" },
+    Company_Name: "Company",
+    Salary: 50000,
+    Designation: "Tester",
+    Age: 30,
+    Expertise: ["Testing", "Automation"],
+    DOB: "1994-10-10",
+    Email_id: "testuser@company.com",
+    Contact: "9876543200",
+    Address: [{ PAddr: "Test Address", LAddr: "City", city: "Test City", Pin_code: "000000" }]
+  })
+}
+
+# Now create an index on Emp_id field
+db.Employee.createIndex({ Emp_id: 1 })
+
+# Measure the time taken to search for Emp_id before and after the index
+# Before index
+let startTime = new Date().getTime();
+db.Employee.find({ Emp_id: 5000 }).toArray();
+let endTime = new Date().getTime();
+print("Time taken before index: " + (endTime - startTime) + " ms");
+
+# After index
+startTime = new Date().getTime();
+db.Employee.find({ Emp_id: 5000 }).toArray();
+endTime = new Date().getTime();
+print("Time taken after index: " + (endTime - startTime) + " ms");
+
+# 7. Return a list of indexes on the employee collection.
+db.Employee.getIndexes()

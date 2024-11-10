@@ -1,0 +1,109 @@
+# Start by switching to the CompanyDB database
+use CompanyDB
+
+# Create the Employee collection and insert sample data
+db.Employee.insertMany([
+  {
+    Name: { FName: "John", LName: "Doe" },
+    Company_Name: "Infosys",
+    Salary: 45000,
+    Designation: "Programmer",
+    Age: 28,
+    Expertise: ["Java", "MongoDB", "Spring"],
+    DOB: "1996-03-15",
+    Email_id: "john.doe@infosys.com",
+    Contact: "9876543210",
+    Address: [{ PAddr: "123 Main St", LAddr: "Bangalore" }]
+  },
+  {
+    Name: { FName: "Alice", LName: "Smith" },
+    Company_Name: "TCS",
+    Salary: 35000,
+    Designation: "Tester",
+    Age: 25,
+    Expertise: ["Automation", "Python"],
+    DOB: "1998-06-20",
+    Email_id: "alice.smith@tcs.com",
+    Contact: "9876543221",
+    Address: [{ PAddr: "456 Elm St", LAddr: "Mumbai" }]
+  },
+  {
+    Name: { FName: "Bob", LName: "Johnson" },
+    Company_Name: "Infosys",
+    Salary: 52000,
+    Designation: "Developer",
+    Age: 30,
+    Expertise: ["Java", "Spring", "Docker"],
+    DOB: "1994-11-30",
+    Email_id: "bob.johnson@infosys.com",
+    Contact: "9876543232",
+    Address: [{ PAddr: "789 Pine St", LAddr: "Chennai" }]
+  },
+  {
+    Name: { FName: "Charlie", LName: "Brown" },
+    Company_Name: "TCS",
+    Salary: 25000,
+    Designation: "Tester",
+    Age: 24,
+    Expertise: ["Manual Testing", "Selenium"],
+    DOB: "1999-02-10",
+    Email_id: "charlie.brown@tcs.com",
+    Contact: "9876543243",
+    Address: [{ PAddr: "321 Oak St", LAddr: "Hyderabad" }]
+  },
+  {
+    Name: { FName: "David", LName: "Williams" },
+    Company_Name: "Accenture",
+    Salary: 60000,
+    Designation: "Manager",
+    Age: 35,
+    Expertise: ["Project Management", "Agile", "Leadership"],
+    DOB: "1988-12-25",
+    Email_id: "david.williams@accenture.com",
+    Contact: "9876543254",
+    Address: [{ PAddr: "987 Cedar St", LAddr: "Delhi" }]
+  }
+])
+
+# 1. Select all documents where the Designation field has the value "Programmer" 
+# and the value of the salary field is greater than 30000.
+db.Employee.find({ Designation: "Programmer", Salary: { $gt: 30000 } })
+
+# 2. Create a new document if no document in the employee collection contains 
+# { Designation: "Tester", Company_name: "TCS", Age: 25 }
+db.Employee.updateOne(
+  { Designation: "Tester", Company_Name: "TCS", Age: 25 },
+  { $setOnInsert: {
+      Name: { FName: "Eve", LName: "Taylor" },
+      Company_Name: "TCS",
+      Salary: 28000,
+      Designation: "Tester",
+      Age: 25,
+      Expertise: ["Manual Testing", "Automation"],
+      DOB: "1998-07-10",
+      Email_id: "eve.taylor@tcs.com",
+      Contact: "9876543265",
+      Address: [{ PAddr: "654 Birch St", LAddr: "Chennai" }]
+    }
+  },
+  { upsert: true }
+)
+
+# 3. Increase salary of each Employee working with “Infosys” by 10000.
+db.Employee.updateMany(
+  { Company_Name: "Infosys" },
+  { $inc: { Salary: 10000 } }
+)
+
+# 4. Find all employees working with "TCS" and reduce their salary by 5000.
+db.Employee.updateMany(
+  { Company_Name: "TCS" },
+  { $inc: { Salary: -5000 } }
+)
+
+# 5. Return documents where Designation is not equal to "Tester".
+db.Employee.find({ Designation: { $ne: "Tester" } })
+
+# 6. Find all employees with an exact match on an Array having Expertise: 
+# ['Mongodb', 'Mysql', 'Cassandra']
+db.Employee.find({ Expertise: ["Mongodb", "Mysql", "Cassandra"] })

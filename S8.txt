@@ -1,0 +1,62 @@
+-- Create Companies table
+CREATE TABLE Companies (
+    comp_id INT PRIMARY KEY,
+    name VARCHAR(50) NOT NULL,
+    cost DECIMAL(10, 2),
+    year INT
+);
+
+-- Insert records into Companies table
+INSERT INTO Companies (comp_id, name, cost, year) VALUES
+(1, 'Tech Solutions', 50000.00, 2020),
+(2, 'Innovate Corp', 75000.00, 2019),
+(3, 'Green Energy', 120000.00, 2021),
+(4, 'Smart Systems', 95000.00, 2022);
+
+-- Create Orders table
+CREATE TABLE Orders (
+    comp_id INT,
+    domain VARCHAR(50) NOT NULL,
+    quantity INT,
+    FOREIGN KEY (comp_id) REFERENCES Companies(comp_id)
+);
+
+-- Insert records into Orders table with valid comp_id
+INSERT INTO Orders (comp_id, domain, quantity) VALUES
+(1, 'Technology', 100),
+(2, 'Innovation', 150),
+(3, 'Renewable Energy', 200);
+
+
+select C.name,C.cost,O.domain,O.quantity
+from Companies C
+inner join Orders O on C.comp_id = O.comp_id;
+
+select C.name,C.cost,O.domain,O.quantity
+from Companies C
+left join Orders O on C.comp_id = O.comp_id;
+
+select C.name,C.cost,O.domain,O.quantity
+from Companies C
+right join Orders O on C.comp_id = O.comp_id;
+
+select C.name,C.cost,O.domain,O.quantity
+from Companies C
+left join Orders O on C.comp_id = O.comp_id;
+UNION
+select C.name,C.cost,O.domain,O.quantity
+from Companies C
+right join Orders O on C.comp_id = O.comp_id;
+
+create view view1 as
+select C.name as Company_name, O.quantity
+from Companies C
+left join Orders O on C.comp_id=O.comp_id;
+
+create view view2 as
+select C.name as Company_name, O.quantity
+from Companies C
+left join Orders O on C.comp_id=O.comp_id;
+
+insert into Companies(comp_id,name,cost,year)
+values(5,'ABCD',120000,2024)

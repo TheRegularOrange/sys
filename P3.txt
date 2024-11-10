@@ -1,0 +1,79 @@
+-- Create N_RollCall table
+CREATE TABLE N_RollCall (
+    Rollin INT PRIMARY KEY,
+    Name VARCHAR(50),
+    DateOfIssue DATE,
+    NameOfBook VARCHAR(100),
+    Status VARCHAR(10)
+);
+
+-- Create O_RollCall table
+CREATE TABLE O_RollCall (
+    Rollin INT,
+    Name VARCHAR(50),
+    DateOfIssue DATE,
+    NameOfBook VARCHAR(100),
+    Status VARCHAR(10),
+    PRIMARY KEY (Rollin, Name, NameOfBook)  -- Composite Primary Key to prevent duplicates
+);
+
+
+
+
+INSERT INTO N_RollCall (Rollin, Name, DateOfIssue, NameOfBook, Status) 
+VALUES (1, 'Alice', TO_DATE('2024-01-15', 'YYYY-MM-DD'), 'Database Systems', 'I');
+
+INSERT INTO N_RollCall (Rollin, Name, DateOfIssue, NameOfBook, Status) 
+VALUES (2, 'Bob', TO_DATE('2024-02-01', 'YYYY-MM-DD'), 'Data Structures', 'I');
+
+INSERT INTO N_RollCall (Rollin, Name, DateOfIssue, NameOfBook, Status) 
+VALUES (3, 'Charlie', TO_DATE('2024-03-10', 'YYYY-MM-DD'), 'Machine Learning', 'I');
+
+INSERT INTO N_RollCall (Rollin, Name, DateOfIssue, NameOfBook, Status) 
+VALUES (4, 'David', TO_DATE('2024-04-12', 'YYYY-MM-DD'), 'Artificial Intelligence', 'I');
+
+
+INSERT INTO O_RollCall (Rollin, Name, DateOfIssue, NameOfBook, Status) 
+VALUES (1, 'Alice', TO_DATE('2024-01-15', 'YYYY-MM-DD'), 'Database Systems', 'R');
+
+INSERT INTO O_RollCall (Rollin, Name, DateOfIssue, NameOfBook, Status) 
+VALUES (2, 'Bob', TO_DATE('2024-02-01', 'YYYY-MM-DD'), 'Data Structures', 'R');
+
+
+DECLARE
+    CURSOR N_roll_cursor IS
+        SELECT Rollin, Name, DateOfIssue, NameOfBook, Status
+        FROM N_RollCall;
+    
+    v_rollin N_RollCall.Rollin%TYPE;
+    v_name N_RollCall.Name%TYPE;
+    v_date_of_issue N_RollCall.DateOfIssue%TYPE;
+    v_name_of_book N_RollCall.NameOfBook%TYPE;
+    v_status N_RollCall.Status%TYPE;
+BEGIN
+    FOR rec IN N_roll_cursor LOOP
+        v_rollin := rec.Rollin;
+        v_name := rec.Name;
+        v_date_of_issue := rec.DateOfIssue;
+        v_name_of_book := rec.NameOfBook;
+        v_status := rec.Status;
+        
+        INSERT INTO O_RollCall (Rollin, Name, DateOfIssue, NameOfBook, Status)
+        SELECT v_rollin, v_name, v_date_of_issue, v_name_of_book, v_status
+        FROM dual
+        WHERE NOT EXISTS (
+            SELECT 1
+            FROM O_RollCall
+            WHERE Rollin = v_rollin
+            AND Name = v_name
+            AND NameOfBook = v_name_of_book
+        );
+    END LOOP;
+    
+    COMMIT; 
+    DBMS_OUTPUT.PUT_LINE('Merge completed successfully');
+END;
+/
+
+SELECT * FROM O_RollCall;
+

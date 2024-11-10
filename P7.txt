@@ -1,0 +1,35 @@
+-- Create the Age_calc function to calculate age in years, months, and days
+CREATE OR REPLACE FUNCTION Age_calc (
+    dob IN DATE,             -- Input parameter for Date of Birth
+    age_months OUT NUMBER,   -- OUT parameter for months
+    age_days OUT NUMBER      -- OUT parameter for days
+) RETURN NUMBER IS
+    years NUMBER;
+BEGIN
+    -- Calculate the years part directly using months_between for an accurate year calculation
+    years := TRUNC(MONTHS_BETWEEN(SYSDATE, dob) / 12);
+
+    -- Calculate remaining months after full years
+    age_months := TRUNC(MONTHS_BETWEEN(SYSDATE, dob)) - (years * 12);
+
+    -- Calculate days remaining after full months
+    age_days := SYSDATE - ADD_MONTHS(dob, years * 12 + age_months);
+
+    RETURN years;
+END;
+/
+
+-- Example block to use Age_calc function and display the age in years, months, and days
+DECLARE
+    dob DATE := TO_DATE('1990-05-15', 'YYYY-MM-DD'); -- Sample date of birth
+    age_in_years NUMBER;
+    age_in_months NUMBER;
+    age_in_days NUMBER(2);
+BEGIN
+    -- Call Age_calc function with dob and capture years, months, and days
+    age_in_years := Age_calc(dob, age_in_months, age_in_days);
+
+    -- Display the calculated age in years, months, and days
+    DBMS_OUTPUT.PUT_LINE('Age: ' || age_in_years || ' years, ' || age_in_months || ' months, ' || age_in_days || ' days');
+END;
+/

@@ -1,0 +1,47 @@
+-- Create the CUSTOMERS table with a sample 'salary' column
+CREATE TABLE CUSTOMERS (
+    customer_id INT PRIMARY KEY,
+    customer_name VARCHAR2(100),
+    salary DECIMAL(10, 2)
+);
+
+-- Insert sample data into CUSTOMERS table
+INSERT INTO CUSTOMERS (customer_id, customer_name, salary) VALUES (1, 'Alice', 5000.00);
+INSERT INTO CUSTOMERS (customer_id, customer_name, salary) VALUES (2, 'Bob', 6000.00);
+INSERT INTO CUSTOMERS (customer_id, customer_name, salary) VALUES (3, 'Charlie', 7000.00);
+COMMIT;
+
+-- Create the trigger on CUSTOMERS table
+CREATE OR REPLACE TRIGGER salary_change_trigger
+AFTER INSERT OR UPDATE OR DELETE ON CUSTOMERS
+FOR EACH ROW
+DECLARE
+    v_salary_diff DECIMAL(10, 2);
+BEGIN
+    -- For INSERT operation, no old values exist, so skip the salary difference calculation
+    IF INSERTING THEN
+        NULL;  -- Do nothing on insert
+    ELSIF UPDATING THEN
+        -- Calculate salary difference between old and new salary during an update
+        v_salary_diff := :NEW.salary - :OLD.salary;
+        DBMS_OUTPUT.PUT_LINE('Salary updated for ' || :NEW.customer_name || ' from ' || :OLD.salary || ' to ' || :NEW.salary || '. Salary difference: ' || v_salary_diff);
+    ELSIF DELETING THEN
+        -- Only old salary is available during DELETE, so display the difference as a negative number
+        DBMS_OUTPUT.PUT_LINE('Salary of ' || :OLD.customer_name || ' was ' || :OLD.salary || ' before deletion.');
+    END IF;
+END;
+/
+
+-- Test the trigger with some operations
+
+-- Update salary of Alice
+UPDATE CUSTOMERS SET salary = 5500 WHERE customer_id = 1;
+
+-- Delete Bob's record
+DELETE FROM CUSTOMERS WHERE customer_id = 2;
+
+-- Insert a new customer with salary
+INSERT INTO CUSTOMERS (customer_id, customer_name, salary) VALUES (4, 'David', 8000);
+
+-- Verify the output (you need to check DBMS_OUTPUT in your session)
+SELECT * FROM CUSTOMERS;

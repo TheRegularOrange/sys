@@ -1,0 +1,117 @@
+# Switch to the CompanyDB database
+use CompanyDB
+
+# Insert sample documents into Employee collection
+db.Employee.insertMany([
+  {
+    Emp_id: 101,
+    Name: { FName: "John", LName: "Doe" },
+    Company_Name: "Infosys",
+    Salary: 60000,
+    Designation: "Developer",
+    Age: 29,
+    Expertise: ["Java", "Spring", "MongoDB"],
+    DOB: "1995-05-10",
+    Email_id: "john.doe@infosys.com",
+    Contact: "9876543210",
+    Address: [{ PAddr: "123 Main St", LAddr: "Bangalore", city: "Bangalore", Pin_code: "560001" }]
+  },
+  {
+    Emp_id: 102,
+    Name: { FName: "Alice", LName: "Smith" },
+    Company_Name: "TCS",
+    Salary: 45000,
+    Designation: "Tester",
+    Age: 25,
+    Expertise: ["Automation", "Python"],
+    DOB: "1998-07-20",
+    Email_id: "alice.smith@tcs.com",
+    Contact: "9876543221",
+    Address: [{ PAddr: "456 Elm St", LAddr: "Mumbai", city: "Mumbai", Pin_code: "400001" }]
+  },
+  {
+    Emp_id: 103,
+    Name: { FName: "Bob", LName: "Johnson" },
+    Company_Name: "TCS",
+    Salary: 70000,
+    Designation: "Manager",
+    Age: 32,
+    Expertise: ["Leadership", "Project Management", "Agile"],
+    DOB: "1992-01-12",
+    Email_id: "bob.johnson@tcs.com",
+    Contact: "9876543232",
+    Address: [{ PAddr: "789 Pine St", LAddr: "Chennai", city: "Chennai", Pin_code: "600001" }]
+  },
+  {
+    Emp_id: 104,
+    Name: { FName: "Charlie", LName: "Brown" },
+    Company_Name: "Accenture",
+    Salary: 55000,
+    Designation: "Developer",
+    Age: 27,
+    Expertise: ["C#", ".NET", "React"],
+    DOB: "1997-02-05",
+    Email_id: "charlie.brown@accenture.com",
+    Contact: "9876543243",
+    Address: [{ PAddr: "321 Oak St", LAddr: "Hyderabad", city: "Hyderabad", Pin_code: "500001" }]
+  },
+  {
+    Emp_id: 105,
+    Name: { FName: "David", LName: "Williams" },
+    Company_Name: "TCS",
+    Salary: 35000,
+    Designation: "Tester",
+    Age: 24,
+    Expertise: ["Manual Testing", "Selenium"],
+    DOB: "1999-12-25",
+    Email_id: "david.williams@tcs.com",
+    Contact: "9876543254",
+    Address: [{ PAddr: "987 Cedar St", LAddr: "Delhi", city: "Delhi", Pin_code: "110001" }]
+  }
+])
+
+# 1. Creates a new document if no document in the employee collection 
+# contains { Designation: "Tester", Company_Name: "TCS", Age: 25 }
+db.Employee.updateOne(
+  { Designation: "Tester", Company_Name: "TCS", Age: 25 },
+  {
+    $setOnInsert: {
+      Emp_id: 106,
+      Name: { FName: "Eve", LName: "Taylor" },
+      Company_Name: "TCS",
+      Salary: 28000,
+      Designation: "Tester",
+      Age: 25,
+      Expertise: ["Manual Testing", "Automation"],
+      DOB: "1998-06-15",
+      Email_id: "eve.taylor@tcs.com",
+      Contact: "9876543265",
+      Address: [{ PAddr: "654 Birch St", LAddr: "Chennai", city: "Chennai", Pin_code: "600002" }]
+    }
+  },
+  { upsert: true }
+)
+
+# 2. Finds all employees working with Company_Name: "TCS" and increase their salary by 2000.
+db.Employee.updateMany(
+  { Company_Name: "TCS" },
+  { $inc: { Salary: 2000 } }
+)
+
+# 3. Matches all documents where the value of the field Address is an 
+# embedded document that contains only the field city with the value "Pune" 
+# and the field Pin_code with the value "411001".
+db.Employee.find(
+  { "Address": { $elemMatch: { city: "Pune", Pin_code: "411001" } } }
+)
+
+# 4. Find employee details who are working as "Developer" or "Tester".
+db.Employee.find(
+  { Designation: { $in: ["Developer", "Tester"] } }
+)
+
+# 5. Drop Single documents where designation="Developer".
+db.Employee.deleteOne({ Designation: "Developer" })
+
+# 6. Count number of documents in employee collection.
+db.Employee.countDocuments()

@@ -1,0 +1,62 @@
+-- Create the sequence for generating Roll numbers in Result table
+CREATE SEQUENCE Result_seq START WITH 1 INCREMENT BY 1;
+
+-- Create Stud_Marks table
+CREATE TABLE Stud_Marks (
+    name VARCHAR2(50),
+    total_marks NUMBER(4)
+);
+
+-- Create Result table
+CREATE TABLE Result (
+    Roll INT PRIMARY KEY,
+    name VARCHAR2(50),
+    Class VARCHAR2(30)
+);
+
+-- Insert sample data into Stud_Marks table
+INSERT INTO Stud_Marks (name, total_marks) VALUES ('Alice', 1500);
+INSERT INTO Stud_Marks (name, total_marks) VALUES ('Bob', 980);
+INSERT INTO Stud_Marks (name, total_marks) VALUES ('Charlie', 850);
+INSERT INTO Stud_Marks (name, total_marks) VALUES ('David', 890);
+INSERT INTO Stud_Marks (name, total_marks) VALUES ('Eva', 1020);
+
+COMMIT;
+
+-- Stored Procedure for categorizing students based on marks
+CREATE OR REPLACE PROCEDURE proc_Grade IS
+BEGIN
+    FOR stud_rec IN (SELECT name, total_marks FROM Stud_Marks) LOOP
+        DECLARE
+            v_class VARCHAR2(30);
+        BEGIN
+            -- Determine class based on marks
+            IF stud_rec.total_marks >= 990 AND stud_rec.total_marks <= 1500 THEN
+                v_class := 'Distinction';
+            ELSIF stud_rec.total_marks BETWEEN 900 AND 989 THEN
+                v_class := 'First Class';
+            ELSIF stud_rec.total_marks BETWEEN 825 AND 899 THEN
+                v_class := 'Higher Second Class';
+            ELSE
+                v_class := 'No Class';
+            END IF;
+            
+            -- Insert the result into the Result table
+            INSERT INTO Result (Roll, name, Class)
+            VALUES (Result_seq.NEXTVAL, stud_rec.name, v_class);
+        END;
+    END LOOP;
+    
+    -- Commit changes to make sure all entries are saved
+    COMMIT;
+    DBMS_OUTPUT.PUT_LINE('Grades categorized successfully.');
+END proc_Grade;
+/
+
+-- PL/SQL block to execute the procedure
+BEGIN
+    proc_Grade;
+END;
+/
+
+select * from Result;

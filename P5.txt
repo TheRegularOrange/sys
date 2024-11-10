@@ -1,0 +1,51 @@
+-- Create the emp table
+CREATE TABLE emp (
+    emp_no INT PRIMARY KEY,
+    salary NUMBER(10, 2)
+);
+
+-- Create the increment_salary table
+CREATE TABLE increment_salary (
+    emp_no INT,
+    salary NUMBER(10, 2),
+    increment_date DATE DEFAULT SYSDATE,
+    FOREIGN KEY (emp_no) REFERENCES emp(emp_no)
+);
+
+-- Insert sample data into emp table
+INSERT INTO emp (emp_no, salary) VALUES (1, 40000);
+INSERT INTO emp (emp_no, salary) VALUES (2, 55000);
+INSERT INTO emp (emp_no, salary) VALUES (3, 30000);
+INSERT INTO emp (emp_no, salary) VALUES (4, 45000);
+INSERT INTO emp (emp_no, salary) VALUES (5, 70000);
+
+COMMIT;
+
+-- PL/SQL Block to increase salaries and log changes in increment_salary table
+DECLARE
+    v_avg_salary NUMBER(10, 2);  -- Variable to hold average salary
+BEGIN
+    -- Calculate the average salary
+    SELECT AVG(salary) INTO v_avg_salary FROM emp;
+
+    -- Increase salary by 10% for employees earning less than average salary
+    FOR emp_rec IN (SELECT emp_no, salary FROM emp WHERE salary < v_avg_salary) LOOP
+        -- Update the salary in emp table
+        UPDATE emp
+        SET salary = salary * 1.10
+        WHERE emp_no = emp_rec.emp_no;
+
+        -- Log the update in increment_salary table
+        INSERT INTO increment_salary (emp_no, salary)
+        VALUES (emp_rec.emp_no, emp_rec.salary * 1.10);
+    END LOOP;
+
+    -- Commit the changes
+    COMMIT;
+    DBMS_OUTPUT.PUT_LINE('Salaries updated and increments logged successfully.');
+
+END;
+/
+
+
+select * from increment_salary;

@@ -1,0 +1,53 @@
+-- Step 1: Create the Emp table
+CREATE TABLE Emp (
+    Emp_no INT PRIMARY KEY,
+    Emp_name VARCHAR(50),
+    Emp_salary DECIMAL(10, 2)
+);
+
+-- Step 2: Create the Tracking table to store the Emp_no and Emp_salary for low salary attempts
+CREATE TABLE Tracking (
+    Emp_no INT,
+    Emp_salary DECIMAL(10, 2),
+    CONSTRAINT FK_Tracking_Emp FOREIGN KEY (Emp_no) REFERENCES Emp(Emp_no)
+);
+
+-- Step 3: Create the AFTER trigger for INSERT, UPDATE, and DELETE operations
+CREATE OR REPLACE TRIGGER salary_tracking_trigger
+AFTER INSERT OR UPDATE OR DELETE ON Emp
+FOR EACH ROW
+DECLARE
+    v_salary DECIMAL(10, 2);
+BEGIN
+    -- Handle the INSERT case
+    IF INSERTING THEN
+        -- Check if the inserted salary is less than Rs. 50,000
+        IF :NEW.Emp_salary < 50000 THEN
+            INSERT INTO Tracking (Emp_no, Emp_salary)
+            VALUES (:NEW.Emp_no, :NEW.Emp_salary);
+        END IF;
+    -- Handle the UPDATE case
+    ELSIF UPDATING THEN
+        -- Check if the updated salary is less than Rs. 50,000
+        IF :NEW.Emp_salary < 50000 THEN
+            INSERT INTO Tracking (Emp_no, Emp_salary)
+            VALUES (:NEW.Emp_no, :NEW.Emp_salary);
+        END IF;
+    -- Handle the DELETE case
+    ELSIF DELETING THEN
+        -- If an employee's record is deleted, do nothing (or record the deletion attempt if needed)
+        NULL;
+    END IF;
+END;
+/
+
+INSERT INTO Emp (Emp_no, Emp_name, Emp_salary) 
+VALUES (1, 'John Doe', 45000);
+
+UPDATE Emp 
+SET Emp_salary = 40000 
+WHERE Emp_no = 1;
+
+select * from Tracking;
+
+select * from Emp;

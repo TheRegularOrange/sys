@@ -1,0 +1,160 @@
+# Switch to the database
+use CompanyDB
+
+# Insert sample documents into Employee collection
+db.Employee.insertMany([
+  {
+    Name: { FName: "John", LName: "Doe" },
+    Company_Name: "Infosys",
+    Salary: 60000,
+    Designation: "Developer",
+    Age: 29,
+    Expertise: ["Java", "Spring", "MongoDB"],
+    DOB: "1995-05-10",
+    Email_id: "john.doe@infosys.com",
+    Contact: "9876543210",
+    Address: [{ PAddr: "123 Main St", LAddr: "Bangalore", city: "Bangalore", Pin_code: "560001" }]
+  },
+  {
+    Name: { FName: "Alice", LName: "Smith" },
+    Company_Name: "TCS",
+    Salary: 45000,
+    Designation: "Tester",
+    Age: 25,
+    Expertise: ["Automation", "Python"],
+    DOB: "1998-07-20",
+    Email_id: "alice.smith@tcs.com",
+    Contact: "9876543221",
+    Address: [{ PAddr: "456 Elm St", LAddr: "Mumbai", city: "Mumbai", Pin_code: "400001" }]
+  },
+  {
+    Name: { FName: "Bob", LName: "Johnson" },
+    Company_Name: "TCS",
+    Salary: 70000,
+    Designation: "Manager",
+    Age: 32,
+    Expertise: ["Leadership", "Project Management", "Agile"],
+    DOB: "1992-01-12",
+    Email_id: "bob.johnson@tcs.com",
+    Contact: "9876543232",
+    Address: [{ PAddr: "789 Pine St", LAddr: "Chennai", city: "Chennai", Pin_code: "600001" }]
+  },
+  {
+    Name: { FName: "Charlie", LName: "Brown" },
+    Company_Name: "Accenture",
+    Salary: 55000,
+    Designation: "Developer",
+    Age: 27,
+    Expertise: ["C#", ".NET", "React"],
+    DOB: "1997-02-05",
+    Email_id: "charlie.brown@accenture.com",
+    Contact: "9876543243",
+    Address: [{ PAddr: "321 Oak St", LAddr: "Hyderabad", city: "Hyderabad", Pin_code: "500001" }]
+  },
+  {
+    Name: { FName: "Swapnil", LName: "Jadhav" },
+    Company_Name: "TCS",
+    Salary: 35000,
+    Designation: "Tester",
+    Age: 24,
+    Expertise: ["Manual Testing", "Selenium"],
+    DOB: "1999-12-25",
+    Email_id: "swapnil.jadhav@tcs.com",
+    Contact: "9876543254",
+    Address: [{ PAddr: "987 Cedar St", LAddr: "Delhi", city: "Pune", Pin_code: "411001" }]
+  }
+])
+
+# 1. Display the total salary per company using MapReduce
+var mapFunction1 = function() {
+  emit(this.Company_Name, this.Salary);
+};
+
+var reduceFunction1 = function(key, values) {
+  return Array.sum(values);
+};
+
+db.Employee.mapReduce(mapFunction1, reduceFunction1, { out: "total_salary_per_company" });
+
+# View the result
+db.total_salary_per_company.find()
+
+# 2. Display the total salary for company "TCS" using MapReduce
+var mapFunction2 = function() {
+  if (this.Company_Name === "TCS") {
+    emit(this.Company_Name, this.Salary);
+  }
+};
+
+var reduceFunction2 = function(key, values) {
+  return Array.sum(values);
+};
+
+db.Employee.mapReduce(mapFunction2, reduceFunction2, { out: "total_salary_tcs" });
+
+# View the result
+db.total_salary_tcs.find()
+
+# 3. Return the average salary of companies whose address city is "Pune" using MapReduce
+var mapFunction3 = function() {
+  this.Address.forEach(function(address) {
+    if (address.city === "Pune") {
+      emit(this.Company_Name, this.Salary);
+    }
+  });
+};
+
+var reduceFunction3 = function(key, values) {
+  var totalSalary = Array.sum(values);
+  var count = values.length;
+  return { totalSalary: totalSalary, count: count };
+};
+
+var finalizeFunction3 = function(key, reducedValue) {
+  reducedValue.avgSalary = reducedValue.totalSalary / reducedValue.count;
+  return reducedValue.avgSalary;
+};
+
+db.Employee.mapReduce(mapFunction3, reduceFunction3, {
+  out: "average_salary_pune",
+  finalize: finalizeFunction3
+});
+
+# View the result
+db.average_salary_pune.find()
+
+# 4. Display total count for "City=Pune" using MapReduce
+var mapFunction4 = function() {
+  this.Address.forEach(function(address) {
+    if (address.city === "Pune") {
+      emit("Pune", 1);
+    }
+  });
+};
+
+var reduceFunction4 = function(key, values) {
+  return Array.sum(values);
+};
+
+db.Employee.mapReduce(mapFunction4, reduceFunction4, { out: "count_pune" });
+
+# View the result
+db.count_pune.find()
+
+# 5. Return count for city "Pune" and age greater than 40 using MapReduce
+var mapFunction5 = function() {
+  this.Address.forEach(function(address) {
+    if (address.city === "Pune" && this.Age > 40) {
+      emit("Pune_and_Age_Above_40", 1);
+    }
+  });
+};
+
+var reduceFunction5 = function(key, values) {
+  return Array.sum(values);
+};
+
+db.Employee.mapReduce(mapFunction5, reduceFunction5, { out: "count_pune_age_above_40" });
+
+# View the result
+db.count_pune_age_above_40.find()

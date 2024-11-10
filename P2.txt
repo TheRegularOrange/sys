@@ -1,0 +1,64 @@
+CREATE TABLE Borrower (
+    Rollin        NUMBER(10) PRIMARY KEY,
+    Name          VARCHAR2(100),
+    DateofIssue   DATE,
+    NameofBook    VARCHAR2(100),
+    Status        CHAR(1) CHECK (Status IN ('I', 'R')) -- 'I' for Issued, 'R' for Returned
+);
+
+
+CREATE TABLE Fine (
+    Roll_no  NUMBER(10),
+    Dor     DATE DEFAULT SYSDATE,
+    Amt      NUMBER(10, 2),
+    CONSTRAINT fk_borrower_rollin FOREIGN KEY (Roll_no) REFERENCES Borrower(Rollin)
+);
+
+-- Insert sample data into the Borrower table
+INSERT INTO Borrower (Rollin, Name, DateofIssue, NameofBook, Status) VALUES (101, 'Alice Smith', TO_DATE('2023-10-01', 'YYYY-MM-DD'), 'Database Systems', 'I');
+INSERT INTO Borrower (Rollin, Name, DateofIssue, NameofBook, Status) VALUES (102, 'Bob Johnson', TO_DATE('2024-09-20', 'YYYY-MM-DD'), 'Data Structures', 'I');
+INSERT INTO Borrower (Rollin, Name, DateofIssue, NameofBook, Status) VALUES (103, 'Charlie Brown', TO_DATE('2023-11-01', 'YYYY-MM-DD'), 'Operating Systems', 'I');
+INSERT INTO Borrower (Rollin, Name, DateofIssue, NameofBook, Status) VALUES (104, 'Dana White', TO_DATE('2023-08-15', 'YYYY-MM-DD'), 'Computer Networks', 'I');
+INSERT INTO Borrower (Rollin, Name, DateofIssue, NameofBook, Status) VALUES (105, 'Eve Green', TO_DATE('2023-09-01', 'YYYY-MM-DD'), 'Algorithms', 'R');
+
+
+
+DECLARE
+    roll_no VARCHAR2(10);
+    name_of_book VARCHAR2(100);
+    issue_date DATE;
+    return_date DATE := SYSDATE;
+    fine_amt NUMBER := 0;
+    days_diff NUMBER;
+BEGIN
+    roll_no := 101;
+    name_of_book := 'Database Systems';
+    
+    SELECT DateofIssue INTO issue_date
+    FROM Borrower
+    WHERE Rollin = roll_no AND NameofBook = name_of_book;
+    
+    days_diff := (return_date - issue_date);
+    
+    IF days_diff BETWEEN 15 AND 30 THEN
+        fine_amt := days_diff * 5;
+    ELSIF days_diff > 30 THEN
+        fine_amt := (30 * 5) + ((days_diff - 30) * 50);
+    END IF;
+
+    IF fine_amt > 0 THEN
+        INSERT INTO Fine (Roll_no, Dor, Amt) VALUES (roll_no, return_date, fine_amt);
+    END IF;
+    
+    UPDATE Borrower
+    SET Status = 'R'
+    WHERE Rollin = roll_no AND NameofBook = name_of_book;
+    
+    COMMIT;
+    
+    DBMS_OUTPUT.PUT_LINE('Fine for ' || name_of_book || ' is Rs ' || fine_amt);
+    DBMS_OUTPUT.PUT_LINE('Status updated to Returned.');
+END;
+/
+
+select * from Fine;

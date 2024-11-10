@@ -1,0 +1,85 @@
+-- Create the Library table
+CREATE TABLE Library (
+    book_id INT PRIMARY KEY,
+    title VARCHAR2(100),
+    author VARCHAR2(100),
+    published_year INT
+);
+
+-- Insert sample data into Library table
+INSERT INTO Library (book_id, title, author, published_year) VALUES (1, 'Database Systems', 'Navathe', 2010);
+INSERT INTO Library (book_id, title, author, published_year) VALUES (2, 'Data Structures', 'Seymour Lipschutz', 2015);
+INSERT INTO Library (book_id, title, author, published_year) VALUES (3, 'Machine Learning', 'Tom Mitchell', 2001);
+COMMIT;
+
+-- Create the Library_Audit table to store old values of updated or deleted records
+CREATE TABLE Library_Audit (
+    audit_id INT PRIMARY KEY,
+    book_id INT,
+    old_title VARCHAR2(100),
+    old_author VARCHAR2(100),
+    old_published_year INT,
+    action_type VARCHAR2(10), -- 'UPDATE' or 'DELETE'
+    action_date DATE DEFAULT SYSDATE
+);
+
+-- Create a sequence for audit_id in Library_Audit table
+CREATE SEQUENCE audit_seq START WITH 1 INCREMENT BY 1;
+
+-- Create BEFORE UPDATE and DELETE Trigger on Library
+CREATE OR REPLACE TRIGGER before_update_delete_library
+BEFORE UPDATE OR DELETE ON Library
+FOR EACH ROW
+DECLARE
+    v_action_type VARCHAR2(10);
+BEGIN
+    -- Determine action type based on whether it’s an update or delete
+    IF UPDATING THEN
+        v_action_type := 'UPDATE';
+    ELSIF DELETING THEN
+        v_action_type := 'DELETE';
+    END IF;
+
+    -- Insert old record data into Library_Audit before update or delete
+    INSERT INTO Library_Audit (
+        audit_id, book_id, old_title, old_author, old_published_year, action_type, action_date
+    ) VALUES (
+        audit_seq.NEXTVAL,
+        :OLD.book_id,
+        :OLD.title,
+        :OLD.author,
+        :OLD.published_year,
+        v_action_type,
+        SYSDATE
+    );
+END;
+/
+
+-- Create AFTER UPDATE and DELETE Trigger on Library
+CREATE OR REPLACE TRIGGER after_update_delete_library
+AFTER UPDATE OR DELETE ON Library
+FOR EACH ROW
+BEGIN
+    -- After update or delete, display a message indicating the action completed successfully
+    IF UPDATING THEN
+        DBMS_OUTPUT.PUT_LINE('Record updated successfully in Library table.');
+    ELSIF DELETING THEN
+        DBMS_OUTPUT.PUT_LINE('Record deleted successfully from Library table.');
+    END IF;
+END;
+/
+
+-- Testing the triggers with an update and delete action
+BEGIN
+    -- Update a record in Library
+    UPDATE Library SET title = 'Advanced Database Systems' WHERE book_id = 1;
+
+    -- Delete a record from Library
+    DELETE FROM Library WHERE book_id = 2;
+
+    COMMIT;
+END;
+/
+
+-- Verify data in Library_Audit table
+SELECT * FROM Library_Audit;
